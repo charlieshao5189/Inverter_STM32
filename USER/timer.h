@@ -3,8 +3,10 @@
 
 #include "stm32f10x.h"
 #define CLOCK      72000000
-#define FQC_CARR   5000				   // carrier frequency Hz 载波
-#define C_CYCLE    7200           //=CLOCK/2*FQC_CARR 载入值，为半周期	
+#define FQC_CARR   5000				      // carrier frequency Hz 载波
+#define C_CYCLE    6000             //=CLOCK/2*FQC_CARR 载入值，为半周期,对应载波5K	
+//#define C_CYCLE    3600           //=CLOCK/2*FQC_CARR 载入值，为半周期,对应载波10K
+//#define C_CYCLE    1800           //=CLOCK/2*FQC_CARR 载入值，为半周期,对应载波20K	
 
 typedef struct
 {

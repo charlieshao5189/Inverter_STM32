@@ -23,3 +23,11 @@ BUG:
 本版在整体电路板出来之后，仅对端口做了更改，为动程序部分。
 
 2014/12/7  Upload  the V2.0 code to github for the first time,this project can be opened by Keil. It work with the V2.0 Inverter PCB, but it does not work very well, on some frequency it will shake, I am studying  the new algorithm.
+
+2014/12/11 10:10
+这次程序程序进行了大改主要是以下方面：
+1.载波频率可以在5K,10K,20K三档上切换，要相应改变其中的计算公式，防止溢出；
+2.频率和电压显示到小数点后两位，相应增加长按键处理，连按3秒开始十分位递增，连按5秒开始个位递增。
+2014/12/11 10:10
+1.测试后发现，载波频率低于6k时，电机啸叫声较大，频率高于6k，在8k，10K,20载频上测试，电机在30HZ左右时振动较大。
+2.在实现长按键功能时程序已乱，还未整理好。

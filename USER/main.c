@@ -19,14 +19,17 @@ History:     无
 #include "sin_tab.h"
 
 u16 soft_cnt = 0;
-vu16 out_fqc = 10;                  //输出频率，默认初始为10HZ
-vu16 out_volt = 60;
+extern vu16 key_value;
+vu16 out_fqc = 1000;                  //输出频率，默认初始为10HZ
+vu16 pre_out_fqc=1000;
 vu16 pre_out_fqc;
+vu16 out_volt;
 vu16 volt_cmd = 0;          /* torque command value x carrier /4 */
 
-vu16 sin_cut = 0;	      		 /* skip - read value for sine pointer */
+volatile float sin_cut = 0;	      		 /* skip - read value for sine pointer */
 vu16 sin_pt = 0;							/* angle */
 vu16 sinpt_sum = 0;         /* sum of angle  */
+//vu8 Moter_Start_Flag=0;
 
 volatile PWM_LIMIT pwm;
 
@@ -66,15 +69,15 @@ void pwm_estimator(void)
 
     /* U phase output command */
     pwm.ui  = (s32)sin_tbl[sin_pt] * (s32)(volt_cmd * 2) >> 16;
-    pwm.ui  = (C_CYCLE / 2) - pwm.ui;    // voltage command
+    pwm.ui  = (C_CYCLE /2) - pwm.ui;    // voltage command
 
     /* V phase output command */
     pwm.vi  = (s32)sin_tbl[sin_pt + 120] * (s32)(volt_cmd * 2) >> 16; ;
-    pwm.vi =  (C_CYCLE / 2) - pwm.vi;   // voltage command
+    pwm.vi =  (C_CYCLE /2) - pwm.vi;   // voltage command
 
     /* W phase output command */
     pwm.wi = (s32)sin_tbl[sin_pt + 240] * (s32)(volt_cmd * 2) >> 16;
-    pwm.wi = (C_CYCLE / 2) - pwm.wi;         // voltage command
+    pwm.wi = (C_CYCLE /2) - pwm.wi;         // voltage command
 
 
     /* update buffer */
@@ -88,32 +91,36 @@ void pwm_estimator(void)
 /***********************************************************************************
 FunctionName: void set_parameter(void)
 Description:  设置参数
-Input:        无
+Input:        u16 out_fqc:后两位为小数
 Output:       sin_cut:采样间隔度数X64;volt_cmd:V/F值
 Return:       无
 ***********************************************************************************/
-void set_parameter(void)
+void set_parameter(u16 out_fqc)
 {
-    /*最小值测试*/
-    //	 out_fqc= 10;
-    // 	 out_volt= 60;
-    //	/*skip-read valout_volte = 23040 * output frquency / sample frequency  1s内有23040 * output frquency个点，采样其中的10000个点*/
-    //	sin_cut = (u16)(((u32)out_fqc*23040) / 10000);		//23= 0x0017
-    //	/* voltage command value * carrier /4 */
-    //	volt_cmd = (((u32)out_volt*(C_CYCLE/2))/380);     //568=0x0238
-    //
-    /*最大值测试*/
-    //	 out_fqc= 50;
-    // 	 out_volt= 380;
-    //	/*skip-read valout_volte = 23040 * output frquency / sample frequency  1s内有23040 * output frquency个点，采样其中的10000个点*/
-    //	sin_cut = (u16)(((u32)out_fqc*23040) / 10000);		//115= 0x0073
-    //	/* voltage command value * carrier /4 */
-    //	volt_cmd = (((u32)out_volt*(C_CYCLE/2))/380);     // 3600= 0x0E10
+//    /*最小值测试*/
+//		 out_fqc= 1000;
+//		 out_volt= 10000;
+//	   /*skip-read valout_volte = 23040 * output frquency / sample frequency  1s内有360 * output frquency个点，采样其中的10000个点*/
+//    sin_cut= (float)out_fqc*23040/1000000;
+//    /* voltage command value * carrier /4 */
+//    volt_cmd = (((u32)out_volt * (C_CYCLE / 2)) / 38000);
 
-    /*skip-read valout_volte = 23040 * output frquency / sample frequency  1s内有23040 * output frquency个点，采样其中的10000个点*/
-    sin_cut = (u16)(((u32)out_fqc * 23040) / 10000);
+//    /*最大值测试*/
+//		 out_fqc= 5000;
+//		 out_volt= 38000;
+//	   /*skip-read valout_volte = 23040 * output frquency / sample frequency  1s内有360 * output frquency个点，采样其中的10000个点*/
+//    sin_cut= (float)out_fqc*23040/1000000;
+//    /* voltage command value * carrier /4 */
+//    volt_cmd = (((u32)out_volt * (C_CYCLE / 2)) / 38000);
+
+		out_volt = 7 * out_fqc + 3000;
+		GUI_DISP_HZ(1, 3, "电压：      V");
+		GUI_DISP_DEC(4, 3, out_volt, 2, 0);
+	
+    /*skip-read valout_volte = 23040 * output frquency / sample frequency  1s内有360 * output frquency个点，采样其中的10000个点*/
+    sin_cut= (float)out_fqc*23040/1000000;
     /* voltage command value * carrier /4 */
-    volt_cmd = (((u32)out_volt * (C_CYCLE / 2)) / 380);
+    volt_cmd = (((u32)out_volt * (C_CYCLE / 2)) / 38000);
 }
 /*************************************************
 FunctionName: void Key_Value_Deal(unsigned int key_value)
@@ -122,6 +129,7 @@ Input:        键值
 Output:       无
 Return:       无
 *************************************************/
+vu16 key_count;
 void Key_Value_Deal(unsigned int key_value)
 {
 
@@ -129,32 +137,18 @@ void Key_Value_Deal(unsigned int key_value)
     {
     case  KEY_UP_Value :
     {
-        if(out_fqc >= 50)
-        {
-            out_fqc = 49;
-        }
-        out_fqc++;
-        out_volt = 7 * out_fqc + 30;
-        GUI_DISP_HZ(1, 2, "当前频率：   Hz ");
-        GUI_DISP_88_NUN_NEW(6, 2, out_fqc);
-        GUI_DISP_HZ(1, 3, "理论电压：   V  ");
-        GUI_DISP_888_NUN(6, 3, out_volt, 0);
-        set_parameter();//刷新一下采样间隔和幅值
+				out_fqc+=100;
+			  GUI_DISP_HZ(1, 2, "频率：      Hz");
+				GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
+			  set_parameter(out_fqc);
     };
     break; //
     case  KEY_DOWN_Value :
     {
-        if(out_fqc <= 10)
-        {
-            out_fqc = 11;
-        }
-        out_fqc--;
-        out_volt =  7 * out_fqc + 30;
-        GUI_DISP_HZ(1, 2, "当前频率：   Hz ");
-        GUI_DISP_88_NUN_NEW(6, 2, out_fqc);
-        GUI_DISP_HZ(1, 3, "理论电压：   V  ");
-        GUI_DISP_888_NUN(6, 3, out_volt, 0);
-        set_parameter();//刷新一下采样间隔和幅值
+			  out_fqc-=100;
+        GUI_DISP_HZ(1, 2, "频率：      Hz");
+				GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
+			  set_parameter(out_fqc);
     };
     break;
     case  KEY_ENTER_Value :;
@@ -224,21 +218,22 @@ int main(void)
 	  
 
    
-    Key_GPIO_Config();          //按键初始化
+    Key_GPIO_Config();   //按键初始化
     SPWM_Config();       //SPWM波形输出设置
     NVIC_Configuration();//中断优先级设置
 		
-    out_volt = 7 * out_fqc + 30;//对V/F曲线进行了补偿
-    GUI_DISP_HZ(1, 2, "当前频率：   Hz ");
-    GUI_DISP_88_NUN_NEW(6, 2, out_fqc);
-    GUI_DISP_HZ(1, 3, "理论电压：   V  ");
-    GUI_DISP_888_NUN(6, 3, out_volt, 0);
+    out_volt = 7 * out_fqc + 3000;//对V/F曲线进行了补偿
+    GUI_DISP_HZ(1, 2, "频率：      Hz");
+    GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
+    GUI_DISP_HZ(1, 3, "电压：      V");
+    GUI_DISP_DEC(4, 3, out_volt, 2, 0);
     GUI_DISP_HZ(2, 1, "泰普克变频器");
-
+		
     while(1)
     {
-        Key_Value_Deal(Key_Value_Get());//按键处理函数
-		}
+			  key_value=Key_Value_Get();
+        Key_Value_Deal(key_value);//按键处理函数
+	 	}
 
 }
 

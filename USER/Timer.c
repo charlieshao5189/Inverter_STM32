@@ -120,24 +120,24 @@ void TIM_Config(void)
     /* TIM1 Main Output Enable */
     TIM_CtrlPWMOutputs(TIM1, ENABLE);
     /********************TIM2设置,每100us进中断一次，改变采样点的占空比即幅值**********************************/
-    TIM_TimeBaseStructure.TIM_Prescaler = 9; //分频系数为10
+    TIM_TimeBaseStructure.TIM_Prescaler = 19; //分频系数为10
     TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Down;
-    TIM_TimeBaseStructure.TIM_Period = 720;
+    TIM_TimeBaseStructure.TIM_Period = 360;
     TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 
     TIM_TimeBaseInit( TIM2, &TIM_TimeBaseStructure );
     TIM_ITConfig( TIM2, TIM_IT_Update, ENABLE );
     TIM_Cmd( TIM2, ENABLE );
-	  /********************TIM3设置,用于AD采样间隔设置，长按键处理****************************************/
-		TIM_TimeBaseStructure.TIM_Prescaler= 719;
-		TIM_TimeBaseStructure.TIM_CounterMode= TIM_CounterMode_Down;
-		TIM_TimeBaseStructure.TIM_Period= 20;
-		TIM_TimeBaseStructure.TIM_ClockDivision= 0;
+	  /********************TIM3设置,每100ms进中断一次****************************************/
+//		TIM_TimeBaseStructure.TIM_Prescaler= 999;
+//		TIM_TimeBaseStructure.TIM_CounterMode= TIM_CounterMode_Down;
+//		TIM_TimeBaseStructure.TIM_Period= 3600;
+//		TIM_TimeBaseStructure.TIM_ClockDivision= 0;
 
-		TIM_TimeBaseInit( TIM3, &TIM_TimeBaseStructure );
-   	//TIM_SelectOutputTrigger( TIM3, TIM_TRGOSource_Update );// ADC Trigger  5KHz  周期0.2ms
-		TIM_ITConfig( TIM3, TIM_IT_Update, ENABLE );
-		TIM_Cmd( TIM3, ENABLE );
+//		TIM_TimeBaseInit( TIM3, &TIM_TimeBaseStructure );
+//   	//TIM_SelectOutputTrigger( TIM3, TIM_TRGOSource_Update );// ADC Trigger  
+//		TIM_ITConfig( TIM3, TIM_IT_Update, ENABLE );
+//		TIM_Cmd( TIM3, DISABLE);
 }
 
 

@@ -2,6 +2,7 @@
 #include "SysTick.h"
 
 unsigned int key_value_past = 0;
+vu16 key_value=0;
 /*************************************************
 FunctionName: void Key_GPIO_Config(void)
 Description:  °´¼üGPIO¿ÚÉèÖÃ
