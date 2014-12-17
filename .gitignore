@@ -31,6 +31,11 @@
 *.x86_64
 *.hex
 
+*.Administrator
+*.bak
+*.uvopt
+*.uvoptx
+*.dep
+
 Output/
 Listing/
-

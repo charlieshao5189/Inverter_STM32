@@ -191,8 +191,8 @@ Return:       成功运行返回1，失败返回0
 *************************************************/
 int main(void)
 {
-    Delay_JDQ_Init();    //继电器断开，保护电阻串入主回路
-	  WorkLED_GPIO_Config();//工作指示灯初始化，单片机引脚默认为高，拉低指示灯亮说明单片机工作
+//    Delay_JDQ_Init();    //继电器断开，保护电阻串入主回路
+//	  WorkLED_GPIO_Config();//工作指示灯初始化，单片机引脚默认为高，拉低指示灯亮说明单片机工作
 	  SysTick_Init();//滴答定时器初始化，中断周期1ms，主要用于延时计时	  
 	
 	  Delay(500);//等待12864供电稳定
@@ -201,19 +201,19 @@ int main(void)
 	  GUI_DISP_HZ(2, 1, "泰普克变频器");
 		
 	  /*工作灯闪烁两下后接通延时继电器*/
-		WorkLED(ON);
+//		WorkLED(ON);
 	  GUI_DISP_HZ(2, 2, "初始化中3");
 		Delay(500);//延时500ms共延时2s
-  	WorkLED(OFF);
+//  	WorkLED(OFF);
 	  GUI_DISP_HZ(2, 2, "初始化中2");
 	  Delay(500);
-	  WorkLED(ON);
+//	  WorkLED(ON);
 	  GUI_DISP_HZ(2, 2, "初始化中1");
 		Delay(500);
-		WorkLED(OFF);
+//		WorkLED(OFF);
     GUI_DISP_HZ(2, 2, "初始化完毕！");	
 	  Delay(500);
-	  WorkLED(ON);
+//	  WorkLED(ON);
 	  GPIO_SetBits(GPIOC, GPIO_Pin_12);	//继电器闭合，短路保护电阻，开始工作
 	  
 

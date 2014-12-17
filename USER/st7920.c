@@ -3,18 +3,41 @@
 #include<string.h>
 #include <st7920.h>
 
-#define LCD_SID    GPIO_ReadOutputDataBit(GPIOB,GPIO_Pin_0)                 // 与LCD相连的控制端口
+#ifdef  DeBug
+#define GPIO_LCD_SID       GPIOB
+#define GPIO_Pin_LCD_SID   GPIO_Pin_6
 
-#define SET_CS()   GPIO_SetBits(GPIOB,GPIO_Pin_1)
-#define CLR_CS()   GPIO_ResetBits(GPIOB,GPIO_Pin_1)
+#define GPIO_LCD_CS        GPIOB
+#define GPIO_Pin_LCD_CS    GPIO_Pin_7
 
-#define SET_SID()  GPIO_SetBits(GPIOB,GPIO_Pin_0)
-#define CLR_SID()  GPIO_ResetBits(GPIOB,GPIO_Pin_0)
+#define GPIO_LCD_CLK       GPIOB
+#define GPIO_Pin_LCD_CLK   GPIO_Pin_5
 
-#define SET_CLK()  GPIO_SetBits(GPIOC,GPIO_Pin_5)
-#define CLR_CLK()  GPIO_ResetBits(GPIOC,GPIO_Pin_5)
+#define RCC_LCD_GPIO       RCC_APB2Periph_GPIOB 
 
+#else
+#define GPIO_LCD_SID       GPIOB
+#define GPIO_Pin_LCD_SID   GPIO_Pin_0
 
+#define GPIO_LCD_CS        GPIOB
+#define GPIO_Pin_LCD_CS    GPIO_Pin_1
+
+#define GPIO_LCD_CLK       GPIOC
+#define GPIO_Pin_LCD_CLK   GPIO_Pin_5
+
+#define RCC_LCD_GPIO           RCC_APB2Periph_GPIOB| RCC_APB2Periph_GPIOC
+#endif
+
+#define LCD_SID    GPIO_ReadOutputDataBit(GPIO_LCD_SID,GPIO_Pin_LCD_SID)                 // 与LCD相连的控制端口
+
+#define SET_CS()   GPIO_SetBits(GPIO_LCD_CS, GPIO_Pin_LCD_CS)
+#define CLR_CS()   GPIO_ResetBits(GPIO_LCD_CS, GPIO_Pin_LCD_CS)
+
+#define SET_SID()  GPIO_SetBits(GPIO_LCD_SID,GPIO_Pin_LCD_SID)
+#define CLR_SID()  GPIO_ResetBits(GPIO_LCD_SID,GPIO_Pin_LCD_SID)
+
+#define SET_CLK()  GPIO_SetBits(GPIO_LCD_CLK,GPIO_Pin_LCD_CLK)
+#define CLR_CLK()  GPIO_ResetBits(GPIO_LCD_CLK,GPIO_Pin_LCD_CLK)
 const unsigned char AC[] =	  //基本指令下屏幕中各行列的寄存器地址（显示汉字时）
 {
     0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
@@ -22,10 +45,67 @@ const unsigned char AC[] =	  //基本指令下屏幕中各行列的寄存器地址（显示汉字时）
     0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f,
     0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f,
 };
+//************************************************************
+//函数版权: CharlieShao
+//函数名称: void GUI_LCD_Init(void)
+//函数功能: LCD初始化函数
+//输入参数: 无
+//返回参数: 无
+//创建时间: 2013-02-05
+//修改记录:
+//   记录I:
+//         修改时间:
+//         修改描述:
+//************************************************************
+void GUI_LCD_Init(void)
+{
+    GPIO_InitTypeDef GPIO_InitStructure;
+    RCC_APB2PeriphClockCmd( RCC_LCD_GPIO, ENABLE);
 
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_LCD_SID;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIO_LCD_SID, &GPIO_InitStructure);
+    GPIO_SetBits(GPIO_LCD_SID, GPIO_Pin_LCD_SID);
+	
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_LCD_CLK;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIO_LCD_CLK, &GPIO_InitStructure);
+    GPIO_SetBits(GPIO_LCD_CLK, GPIO_Pin_LCD_CLK);
+	
+   	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_LCD_CS;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIO_LCD_CS, &GPIO_InitStructure);
+    GPIO_SetBits(GPIO_LCD_CS, GPIO_Pin_LCD_CS);
+
+    lcd_wr_cmd(0x30);                                // 功能设定，基本指令
+    lcd_wr_cmd(0x0C);                                // 显示开关，整体显示on，游标on，游标位on
+    lcd_wr_cmd(0x01);                                // 清屏，AC归0
+    lcd_wr_cmd(0x04);                                // 进入设定点，写入时,游标右移动
+    lcd_wr_cmd(0x80);
+}
+void SID_OUT(void)
+{
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 ;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+}
+void SID_IN(void)
+{
+    GPIO_InitTypeDef GPIO_InitStructure;
+
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 ;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+}
 
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void lcd_send_byte(unsigned char dat)
 //函数功能: 向ST7290中写入一字节的数据
 //输入参数: uunsigned char dat 要写入的数据
@@ -66,7 +146,7 @@ void lcd_send_byte(unsigned char dat)
     CLR_CS();
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: unsigned char receive_byte(void)
 //函数功能: 读取ST7290内部数据
 //输入参数: 无
@@ -116,7 +196,7 @@ unsigned char receive_byte(void)//可靠
     return ((0xf0 & temp_h) + (0x0f & temp_l));
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void lcd_wr_cmd(unsigned char cmd)
 //函数功能: 向ST7290中写入控制命令
 //输入参数: unsigend char cmd 要写入的命令
@@ -138,7 +218,7 @@ void lcd_wr_cmd(unsigned char cmd)
     lcd_send_byte(0xf0 & cmd << 4);
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void lcd_wr_dat(unsigned char dat)
 //函数功能: 向ST7290中写入数据
 //输入参数: unsigend char md 要写入的数据
@@ -160,7 +240,7 @@ void lcd_wr_dat(unsigned char dat)
     lcd_send_byte(0xf0 & dat << 4);
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void lcd_ch_busy(void)
 //函数功能: 读取ST7290的状态
 //输入参数: 无
@@ -181,7 +261,7 @@ void lcd_ch_busy(void)
 }
 
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: unsigned char lcd_read(void)
 //函数功能: 读取ST7290内部数据
 //输入参数: 无
@@ -201,60 +281,9 @@ unsigned char lcd_read(void)
     temp = receive_byte();
     return temp;
 }
+
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
-//函数名称: void GUI_LCD_Init(void)
-//函数功能: LCD初始化函数
-//输入参数: 无
-//返回参数: 无
-//创建时间: 2013-02-05
-//修改记录:
-//   记录I:
-//         修改时间:
-//         修改描述:
-//************************************************************
-void GUI_LCD_Init(void)
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-    RCC_APB2PeriphClockCmd( RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC, ENABLE);
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
-    GPIO_SetBits(GPIOB, GPIO_Pin_0 | GPIO_Pin_1);
-	
-	  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOC, &GPIO_InitStructure);
-    GPIO_SetBits(GPIOC, GPIO_Pin_5);
-
-    lcd_wr_cmd(0x30);                                // 功能设定，基本指令
-    lcd_wr_cmd(0x0C);                                // 显示开关，整体显示on，游标on，游标位on
-    lcd_wr_cmd(0x01);                                // 清屏，AC归0
-    lcd_wr_cmd(0x04);                                // 进入设定点，写入时,游标右移动
-    lcd_wr_cmd(0x80);
-}
-void SID_OUT(void)
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 ;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
-}
-void SID_IN(void)
-{
-    GPIO_InitTypeDef GPIO_InitStructure;
-
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 ;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
-}
-//************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_LCD_CLR(unsigned char CLR_DAT)
 //函数功能: LCD清屏函数
 //输入参数: unsigned char CLR_DAT  0xFF:LCD全黑 0x00:LCD全亮
@@ -301,7 +330,7 @@ void GUI_LCD_CLR(unsigned char CLR_DAT)
 }
 
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_LCD_NEGA(unsigned char x,unsigned char y,unsigned char num,unsigned char flag)
 //函数功能: 控制一行中的字节进行反色显示
 //输入参数: unsigned char x          行X从1 - 4
@@ -398,7 +427,7 @@ void GUI_LCD_NEGA(unsigned char x, unsigned char y, unsigned char num, unsigned 
     lcd_wr_cmd(0x30);
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void set_xy(unsigned char x,unsigned char y)
 //函数功能: 设定显示位置,文本模式下
 //输入参数: unsigned char x       行x从1 - 4
@@ -426,7 +455,7 @@ void lcd_set_xy_16(unsigned char x, unsigned char y)  //行x从1-8，列y从1-4
     lcd_wr_cmd(AC[addr]);					   //查表AC的实际寄存器地址
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_HZ(unsigned char x,unsigned char y,unsigned char *str)
 //函数功能: 在指定位置显示指定的汉字字符串
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
@@ -468,7 +497,7 @@ void GUI_DISP_ROM_HZ(unsigned char x, unsigned char y,  const unsigned char  *st
     }
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_HZEX(unsigned char x,unsigned char y,unsigned char *str,unsigned char num,unsigned char flag)
 //函数功能: 在指定位置显示指定的汉字字符串
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
@@ -489,7 +518,7 @@ void GUI_DISP_HZEX(unsigned char x, unsigned char y, const unsigned char *str, u
     GUI_LCD_NEGA(x, y, num * 2, flag);
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_CHAR(unsigned char x,unsigned char y,unsigned char num,unsigned char nage,unsigned char flag)
 //函数功能: 在指定位置显示两位数字
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
@@ -550,7 +579,7 @@ void GUI_DISP_CHAR(unsigned char x, unsigned char y, unsigned char num, unsigned
 }
 
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_INT(unsigned char x,unsigned char y,unsigned int num,unsigned char flag)
 //函数功能: 在指定位置显示INT型变量的值
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
@@ -606,7 +635,7 @@ void GUI_DISP_INT(unsigned char x, unsigned char y, int num, unsigned char flag)
     }
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_FLOAT(unsigned char x, unsigned char y, float num, unsigned char bitnum, unsigned char flag);//浮点数显示，支持小数点后三位
 //函数功能: 在指定位置显示INT型变量的值
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
@@ -682,7 +711,7 @@ void GUI_DISP_FLOAT(unsigned char x, unsigned char y, float num, unsigned char b
     }
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_888_NUN(unsigned char x,unsigned char y,unsigned int num,unsigned char flag)
 //函数功能: 在指定位置显示三位数
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
@@ -739,7 +768,7 @@ void GUI_DISP_888_NUN(unsigned char x, unsigned char y, unsigned int num, unsign
     }
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_8888_NUN(unsigned char x,unsigned char y,unsigned int num,unsigned char flag)
 //函数功能: 在指定位置显示四位数
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
@@ -804,7 +833,7 @@ void GUI_DISP_8888_NUN(unsigned char x, unsigned char y, unsigned int num, unsig
     }
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_888888_NUN(unsigned char x,unsigned char y,unsigned long num)
 //函数功能: 在指定位置显示六位无符号长整形的函数
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
@@ -840,7 +869,7 @@ void GUI_DISP_888888_NUN(unsigned char x, unsigned char y, unsigned long num)
     }
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_88_NUN(unsigned char x,unsigned char y,unsigned int num,unsigned char flag,unsigned char flag_P)
 //函数功能: 在指定位置显示六位无符号长整形的函数
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
@@ -928,7 +957,7 @@ void GUI_DISP_88_NUN_NEW(unsigned char x, unsigned char y, unsigned int num)
     }
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_LONG(unsigned char x,unsigned char y,unsigned int num_h,unsigned int num_l)
 //函数功能: 在指定位置显示LONG型变量的值
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
@@ -1021,7 +1050,7 @@ void GUI_DISP_LONG(unsigned char x, unsigned char y, unsigned int num_h, unsigne
     }
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_DISP_DEC(unsigned char x,unsigned char y,unsigned int num,unsigned char bits,unsigned char flag)
 //输入参数: unsigned char x       要显示的X轴坐标 1 - 8
 //          unsigned char y       要显示的X轴坐标 1 - 4
@@ -1096,7 +1125,7 @@ void GUI_DISP_DEC(unsigned char x, unsigned char y, unsigned int num, unsigned c
     }
 }
 //************************************************************
-//函数版权: 河南万和电气股份有限公司
+//函数版权: CharlieShao
 //函数名称: void GUI_LCD_FAST_CLR(void)
 //函数功能: 快速清屏函数
 //输入参数: 无

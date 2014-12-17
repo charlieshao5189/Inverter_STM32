@@ -3,10 +3,44 @@
 
 #include "stm32f10x.h"
 
-#define KEY_ENTER GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_7)
-#define KEY_UP    GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_9)
-#define KEY_DOWN  GPIO_ReadInputDataBit(GPIOE,GPIO_Pin_8)
-#define KEY_BACK  GPIO_ReadInputDataBit(GPIOB,GPIO_Pin_2)
+#ifdef  DeBug
+
+#define GPIO_KEY_ENTER       GPIOE
+#define GPIO_Pin_KEY_ENTER   GPIO_Pin_1
+
+#define GPIO_KEY_UP          GPIOE
+#define GPIO_Pin_KEY_UP      GPIO_Pin_0
+
+#define GPIO_KEY_DOWN        GPIOB
+#define GPIO_Pin_KEY_DOWN    GPIO_Pin_9
+
+#define GPIO_KEY_BACK        GPIOB
+#define GPIO_Pin_KEY_BACK    GPIO_Pin_8
+
+#define RCC_KEY_GPIO         RCC_APB2Periph_GPIOE|RCC_APB2Periph_GPIOB 
+
+#else
+
+#define GPIO_KEY_ENTER       GPIOE
+#define GPIO_Pin_KEY_ENTER   GPIO_Pin_
+
+#define GPIO_KEY_UP          GPIOE
+#define GPIO_Pin_UP          GPIO_Pin_9
+
+#define GPIO_KEY_DOWN        GPIOE
+#define GPIO_Pin_DOWN        GPIO_Pin_8
+
+#define GPIO_KEY_BACK        GPIOE
+#define GPIO_Pin_BACK        GPIO_Pin_2
+
+#define RCC_KEY_GPIO         RCC_APB2Periph_GPIOE
+
+#endif
+
+#define KEY_ENTER GPIO_ReadInputDataBit(GPIO_KEY_ENTER,GPIO_Pin_KEY_ENTER)
+#define KEY_UP    GPIO_ReadInputDataBit(GPIO_KEY_UP,GPIO_Pin_KEY_UP)
+#define KEY_DOWN  GPIO_ReadInputDataBit(GPIO_KEY_DOWN ,GPIO_Pin_KEY_DOWN)
+#define KEY_BACK  GPIO_ReadInputDataBit(GPIO_KEY_BACK ,GPIO_Pin_KEY_BACK)
 
 #define KEY_ENTER_Value  1
 #define KEY_UP_Value     2
