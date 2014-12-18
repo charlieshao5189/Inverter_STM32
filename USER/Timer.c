@@ -128,16 +128,16 @@ void TIM_Config(void)
     TIM_TimeBaseInit( TIM2, &TIM_TimeBaseStructure );
     TIM_ITConfig( TIM2, TIM_IT_Update, ENABLE );
     TIM_Cmd( TIM2, ENABLE );
-	  /********************TIM3设置,每100ms进中断一次****************************************/
-//		TIM_TimeBaseStructure.TIM_Prescaler= 999;
-//		TIM_TimeBaseStructure.TIM_CounterMode= TIM_CounterMode_Down;
-//		TIM_TimeBaseStructure.TIM_Period= 3600;
-//		TIM_TimeBaseStructure.TIM_ClockDivision= 0;
+	  /********************TIM3设置,每20ms进中断一次****************************************/
+		TIM_TimeBaseStructure.TIM_Prescaler= 399;
+		TIM_TimeBaseStructure.TIM_CounterMode= TIM_CounterMode_Down;
+		TIM_TimeBaseStructure.TIM_Period= 3600;
+		TIM_TimeBaseStructure.TIM_ClockDivision= 0;
 
-//		TIM_TimeBaseInit( TIM3, &TIM_TimeBaseStructure );
-//   	//TIM_SelectOutputTrigger( TIM3, TIM_TRGOSource_Update );// ADC Trigger  
-//		TIM_ITConfig( TIM3, TIM_IT_Update, ENABLE );
-//		TIM_Cmd( TIM3, DISABLE);
+		TIM_TimeBaseInit( TIM3, &TIM_TimeBaseStructure );
+   	//TIM_SelectOutputTrigger( TIM3, TIM_TRGOSource_Update );// ADC Trigger  
+		TIM_ITConfig( TIM3, TIM_IT_Update, ENABLE );
+		TIM_Cmd( TIM3, ENABLE);
 }
 
 

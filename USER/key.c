@@ -1,8 +1,8 @@
 #include "key.h"
 #include "SysTick.h"
 
-unsigned int key_value_past = 0;
-vu16 key_value=0;
+unsigned int key_value_buf = 0;
+
 /*************************************************
 FunctionName: void Key_GPIO_Config(void)
 Description:  按键GPIO口设置
@@ -91,39 +91,40 @@ Input:        无
 Output:       无
 Return:       键值，键值为0时说明没有按键按下
 *************************************************/
+unsigned int key_value_temp;
 unsigned int Key_Value_Get()
 {
     unsigned char i;
     unsigned int key_value = 0;
-    unsigned int key_value_buf = 0;
 
     key_value = Key_Scan();
-    if(key_value != 0)
+	  
+    if(key_value!= 0)
     {
         for(i = 0; i < 3; i++) //键值获取函数要放在主函数中，主函数中不能加延时程序，故重复三次消抖
         {
-            key_value_buf = key_value;
+            key_value_temp = key_value;
             key_value = Key_Scan();
-            if(key_value != key_value_buf)
+            if(key_value != key_value_temp)
             {
-                key_value_past = 0;
+                key_value_temp = 0;
                 return 0;
             }
         }
-        if(key_value != key_value_past)
+        if(key_value != key_value_buf)
         {
             //确实有按键按下并且与前一次按键不同
-            key_value_past = key_value;
+            key_value_buf = key_value;
             return key_value;
         }
         else
         {
-            return 0;
+            return 0;//启动长按键模式
         }
     }
     else
     {
-        key_value_past = 0;
+        key_value_buf = 0;
         return 0;
     }
 }

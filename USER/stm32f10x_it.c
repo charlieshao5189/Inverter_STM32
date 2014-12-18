@@ -213,18 +213,18 @@ void TIM2_IRQHandler(void)
 
 /*************************************************
 FunctionName: void TIM3_IRQHandler(void)
-Description:  0.1s进来一次，连续按键处理
+Description:  20ms进来一次，连续按键处理
 Input:        无
 Output:       无
 Return:       无
 *************************************************/
-extern unsigned int key_value_past;
+extern unsigned int key_value_buf;
 extern void Key_Value_Deal(unsigned int key_value);
 extern vu16 out_fqc;
 extern vu16 pre_out_fqc;
 extern void set_parameter(u16 out_fqc);
 extern vu16 key_count;
-extern vu16 key_value;
+extern vu8  key_status;
 
 extern unsigned int Key_Value_Get();
 
@@ -232,30 +232,30 @@ void TIM3_IRQHandler(void)
 {
     if( TIM_GetITStatus( TIM3, TIM_IT_Update ) != RESET )
     {   
-        if((key_value!= 0))
+        if((key_value_buf!=0))
         {
 					  key_count++;
-			      if(key_count>10000)
+			      if((key_count>50)&&(key_count%10==0))
 				    {
-				      key_count=10000;
+				      key_status=1;//每10进来一次
 				    }
         }
 				else 
-       {
+        {
 				 key_count = 0;
-			  }
+		  	}
           
-        if(out_fqc!= pre_out_fqc)
+        if(out_fqc/10!=pre_out_fqc/10)
         {					
 				 if(out_fqc>pre_out_fqc)
 				   {
-						 pre_out_fqc++;
+						 pre_out_fqc+=10;
 				   }
-					else
+					else 
 					 {
-						 pre_out_fqc--;
+						 pre_out_fqc-=10;
 					 }			
-				//	 set_parameter(pre_out_fqc);
+					 set_parameter(pre_out_fqc);
 				}
 				
         TIM_ClearITPendingBit( TIM3, TIM_IT_Update );

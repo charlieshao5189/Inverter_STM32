@@ -8,11 +8,11 @@
 #define GPIO_KEY_ENTER       GPIOE
 #define GPIO_Pin_KEY_ENTER   GPIO_Pin_1
 
-#define GPIO_KEY_UP          GPIOE
-#define GPIO_Pin_KEY_UP      GPIO_Pin_0
+#define GPIO_KEY_UP          GPIOB
+#define GPIO_Pin_KEY_UP      GPIO_Pin_9
 
-#define GPIO_KEY_DOWN        GPIOB
-#define GPIO_Pin_KEY_DOWN    GPIO_Pin_9
+#define GPIO_KEY_DOWN        GPIOE
+#define GPIO_Pin_KEY_DOWN    GPIO_Pin_0
 
 #define GPIO_KEY_BACK        GPIOB
 #define GPIO_Pin_KEY_BACK    GPIO_Pin_8
@@ -22,18 +22,18 @@
 #else
 
 #define GPIO_KEY_ENTER       GPIOE
-#define GPIO_Pin_KEY_ENTER   GPIO_Pin_
+#define GPIO_Pin_KEY_ENTER   GPIO_Pin_7
 
 #define GPIO_KEY_UP          GPIOE
-#define GPIO_Pin_UP          GPIO_Pin_9
+#define GPIO_Pin_KEY_UP      GPIO_Pin_9
 
 #define GPIO_KEY_DOWN        GPIOE
-#define GPIO_Pin_DOWN        GPIO_Pin_8
+#define GPIO_Pin_KEY_DOWN    GPIO_Pin_8
 
 #define GPIO_KEY_BACK        GPIOE
-#define GPIO_Pin_BACK        GPIO_Pin_2
+#define GPIO_Pin_KEY_BACK    GPIO_Pin_2
 
-#define RCC_KEY_GPIO         RCC_APB2Periph_GPIOE
+#define RCC_KEY_GPIO     RCC_APB2Periph_GPIOE
 
 #endif
 

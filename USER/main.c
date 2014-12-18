@@ -19,7 +19,6 @@ History:     无
 #include "sin_tab.h"
 
 u16 soft_cnt = 0;
-extern vu16 key_value;
 vu16 out_fqc = 1000;                  //输出频率，默认初始为10HZ
 vu16 pre_out_fqc=1000;
 vu16 pre_out_fqc;
@@ -114,7 +113,7 @@ void set_parameter(u16 out_fqc)
 //    volt_cmd = (((u32)out_volt * (C_CYCLE / 2)) / 38000);
 
 		out_volt = 7 * out_fqc + 3000;
-		GUI_DISP_HZ(1, 3, "电压：      V");
+		GUI_DISP_HZ(1, 3, "电压：         V");
 		GUI_DISP_DEC(4, 3, out_volt, 2, 0);
 	
     /*skip-read valout_volte = 23040 * output frquency / sample frequency  1s内有360 * output frquency个点，采样其中的10000个点*/
@@ -130,24 +129,56 @@ Output:       无
 Return:       无
 *************************************************/
 vu16 key_count;
+vu8  key_status;
+#define key_count_interval key_count/10-5
+extern unsigned int key_value_buf;
 void Key_Value_Deal(unsigned int key_value)
 {
-
+	  if((key_value_buf!=0)&&(key_status==1))//长按键处理
+	  {
+			 if(key_value_buf==2)
+			 { 
+					    out_fqc+=key_count_interval ;//key_count= 大于100的奇数，out_fqc每次增加一个奇数		
+              if(out_fqc>5000)
+							{
+							  out_fqc=5000;
+							}								
+			 } 
+			 else if(key_value_buf==3)
+			 {
+				      if(out_fqc<key_count_interval)
+							{
+							 out_fqc=0;
+							}
+					    else out_fqc-=key_count_interval;//key_count= 大于10的奇数，out_fqc每次增加一个奇数
+			 } 
+			   key_status=0;
+			   GUI_DISP_HZ(1, 2,"频率：        Hz");
+         GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
+		}
     switch(key_value)
     {
-    case  KEY_UP_Value :
+    case  KEY_UP_Value:
     {
-				out_fqc+=100;
-			  GUI_DISP_HZ(1, 2, "频率：      Hz");
-				GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
+			  if(out_fqc>=5000)
+			  {  
+				   out_fqc=4999;
+				}
+			  out_fqc+=1;
+        GUI_DISP_HZ(1, 2,"频率：        Hz");
+        GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
 			  set_parameter(out_fqc);
     };
     break; //
     case  KEY_DOWN_Value :
     {
-			  out_fqc-=100;
-        GUI_DISP_HZ(1, 2, "频率：      Hz");
-				GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
+			  if(out_fqc<=1)
+			  {  
+				   out_fqc=1;
+				}
+			  out_fqc-=1;
+        GUI_DISP_HZ(1, 2,"频率：        Hz");
+        GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
 			  set_parameter(out_fqc);
     };
     break;
@@ -223,16 +254,15 @@ int main(void)
     NVIC_Configuration();//中断优先级设置
 		
     out_volt = 7 * out_fqc + 3000;//对V/F曲线进行了补偿
-    GUI_DISP_HZ(1, 2, "频率：      Hz");
+    GUI_DISP_HZ(1, 2,"频率：        Hz");
     GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
-    GUI_DISP_HZ(1, 3, "电压：      V");
+    GUI_DISP_HZ(1, 3,"电压：        V");
     GUI_DISP_DEC(4, 3, out_volt, 2, 0);
-    GUI_DISP_HZ(2, 1, "泰普克变频器");
+    GUI_DISP_HZ(2, 1,"泰普克变频器");
 		
     while(1)
     {
-			  key_value=Key_Value_Get();
-        Key_Value_Deal(key_value);//按键处理函数
+        Key_Value_Deal(Key_Value_Get());//按键处理函数
 	 	}
 
 }
