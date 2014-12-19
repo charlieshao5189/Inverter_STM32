@@ -128,7 +128,7 @@ void TIM_Config(void)
     TIM_TimeBaseInit( TIM2, &TIM_TimeBaseStructure );
     TIM_ITConfig( TIM2, TIM_IT_Update, ENABLE );
     TIM_Cmd( TIM2, ENABLE );
-	  /********************TIM3设置,每20ms进中断一次****************************************/
+	  /********************TIM3设置,每50ms进中断一次****************************************/
 		TIM_TimeBaseStructure.TIM_Prescaler= 399;
 		TIM_TimeBaseStructure.TIM_CounterMode= TIM_CounterMode_Down;
 		TIM_TimeBaseStructure.TIM_Period= 3600;

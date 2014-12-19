@@ -30,10 +30,10 @@
 #define GPIO_KEY_DOWN        GPIOE
 #define GPIO_Pin_KEY_DOWN    GPIO_Pin_8
 
-#define GPIO_KEY_BACK        GPIOE
+#define GPIO_KEY_BACK        GPIOB
 #define GPIO_Pin_KEY_BACK    GPIO_Pin_2
 
-#define RCC_KEY_GPIO     RCC_APB2Periph_GPIOE
+#define RCC_KEY_GPIO     RCC_APB2Periph_GPIOE|RCC_APB2Periph_GPIOB
 
 #endif
 

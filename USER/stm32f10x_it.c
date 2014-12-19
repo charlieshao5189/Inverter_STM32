@@ -206,6 +206,13 @@ void TIM2_IRQHandler(void)
     if( TIM_GetITStatus( TIM2, TIM_IT_Update ) != RESET )
     {
         pwm_estimator();
+			
+			
+			
+			
+			
+			
+			
         TIM_ClearITPendingBit( TIM2, TIM_IT_Update );
     }
 }
@@ -220,8 +227,8 @@ Return:       无
 *************************************************/
 extern unsigned int key_value_buf;
 extern void Key_Value_Deal(unsigned int key_value);
-extern vu16 out_fqc;
-extern vu16 pre_out_fqc;
+extern vu16 out_fqc_targ;
+extern vu16 out_fqc_now;
 extern void set_parameter(u16 out_fqc);
 extern vu16 key_count;
 extern vu8  key_status;
@@ -235,9 +242,13 @@ void TIM3_IRQHandler(void)
         if((key_value_buf!=0))
         {
 					  key_count++;
+					  if(key_count>550)
+            {
+						 key_count=550;
+						}
 			      if((key_count>50)&&(key_count%10==0))
 				    {
-				      key_status=1;//每10进来一次
+				      key_status=1;//每200ms进来一次
 				    }
         }
 				else 
@@ -245,21 +256,35 @@ void TIM3_IRQHandler(void)
 				 key_count = 0;
 		  	}
           
-        if(out_fqc/10!=pre_out_fqc/10)
+        if((out_fqc_targ/10)!=(out_fqc_now/10))
         {					
-				 if(out_fqc>pre_out_fqc)
+		 		 if((out_fqc_targ/10)<(out_fqc_now/10))
 				   {
-						 pre_out_fqc+=10;
+						 out_fqc_now-=10;
 				   }
 					else 
 					 {
-						 pre_out_fqc-=10;
+						 out_fqc_now+=10;
 					 }			
-					 set_parameter(pre_out_fqc);
 				}
+				else if(out_fqc_targ!=out_fqc_now)
+				{
+			  	out_fqc_now=out_fqc_targ;
+				}
+
 				
+//			 if(out_fqc_targ!=out_fqc_now)
+//        {					
+//		 		 if(out_fqc_targ<out_fqc_now)
+//				   {
+//						 out_fqc_now-=1;
+//				   }
+//					else 
+//					 {
+//						 out_fqc_now+=1;
+//					 }			
+//				}			
         TIM_ClearITPendingBit( TIM3, TIM_IT_Update );
 		}
-  
 }
 /***********************END OF FILE************************/

@@ -19,9 +19,8 @@ History:     无
 #include "sin_tab.h"
 
 u16 soft_cnt = 0;
-vu16 out_fqc = 1000;                  //输出频率，默认初始为10HZ
-vu16 pre_out_fqc=1000;
-vu16 pre_out_fqc;
+vu16 out_fqc_targ = 1000;                  //输出频率，默认初始为10HZ
+vu16 out_fqc_now;
 vu16 out_volt;
 vu16 volt_cmd = 0;          /* torque command value x carrier /4 */
 
@@ -111,13 +110,12 @@ void set_parameter(u16 out_fqc)
 //    sin_cut= (float)out_fqc*23040/1000000;
 //    /* voltage command value * carrier /4 */
 //    volt_cmd = (((u32)out_volt * (C_CYCLE / 2)) / 38000);
-
 		out_volt = 7 * out_fqc + 3000;
 		GUI_DISP_HZ(1, 3, "电压：         V");
 		GUI_DISP_DEC(4, 3, out_volt, 2, 0);
 	
     /*skip-read valout_volte = 23040 * output frquency / sample frequency  1s内有360 * output frquency个点，采样其中的10000个点*/
-    sin_cut= (float)out_fqc*23040/1000000;
+    sin_cut= (float)out_fqc/1000*2304/100;//(float)out_fqc*23040/1000000;
     /* voltage command value * carrier /4 */
     volt_cmd = (((u32)out_volt * (C_CYCLE / 2)) / 38000);
 }
@@ -138,53 +136,51 @@ void Key_Value_Deal(unsigned int key_value)
 	  {
 			 if(key_value_buf==2)
 			 { 
-					    out_fqc+=key_count_interval ;//key_count= 大于100的奇数，out_fqc每次增加一个奇数		
-              if(out_fqc>5000)
+				       if(out_fqc_targ+key_count_interval>=5000)
 							{
-							  out_fqc=5000;
-							}								
+							 out_fqc_targ=5000;
+							}
+					    else out_fqc_targ+=key_count_interval ;//key_count= 大于100的奇数，out_fqc每次增加一个奇数				
 			 } 
 			 else if(key_value_buf==3)
 			 {
-				      if(out_fqc<key_count_interval)
+				      if(out_fqc_targ<=key_count_interval)
 							{
-							 out_fqc=0;
+							 out_fqc_targ=0;
 							}
-					    else out_fqc-=key_count_interval;//key_count= 大于10的奇数，out_fqc每次增加一个奇数
+					    else out_fqc_targ-=key_count_interval;//key_count= 大于10的奇数，out_fqc每次增加一个奇数
 			 } 
 			   key_status=0;
 			   GUI_DISP_HZ(1, 2,"频率：        Hz");
-         GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
+         GUI_DISP_DEC(4, 2, out_fqc_targ, 2, 0);
 		}
     switch(key_value)
     {
     case  KEY_UP_Value:
     {
-			  if(out_fqc>=5000)
+			  if(out_fqc_targ>=5000)
 			  {  
-				   out_fqc=4999;
+				   out_fqc_targ=4999;
 				}
-			  out_fqc+=1;
+			  out_fqc_targ+=1;
         GUI_DISP_HZ(1, 2,"频率：        Hz");
-        GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
-			  set_parameter(out_fqc);
+        GUI_DISP_DEC(4, 2, out_fqc_targ, 2, 0);
     };
     break; //
     case  KEY_DOWN_Value :
     {
-			  if(out_fqc<=1)
+			  if(out_fqc_targ<=1)
 			  {  
-				   out_fqc=1;
+				   out_fqc_targ=1;
 				}
-			  out_fqc-=1;
+			  out_fqc_targ-=1;
         GUI_DISP_HZ(1, 2,"频率：        Hz");
-        GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
-			  set_parameter(out_fqc);
+        GUI_DISP_DEC(4, 2, out_fqc_targ, 2, 0);
     };
     break;
-    case  KEY_ENTER_Value :;
+    case  KEY_ENTER_Value :out_fqc_targ=5000;
         break; //
-    case  KEY_BACK_Value :;
+    case  KEY_BACK_Value :out_fqc_targ= 1;
         break; //
     default:;
         break;
@@ -253,9 +249,9 @@ int main(void)
     SPWM_Config();       //SPWM波形输出设置
     NVIC_Configuration();//中断优先级设置
 		
-    out_volt = 7 * out_fqc + 3000;//对V/F曲线进行了补偿
+    out_volt = 7 * out_fqc_targ + 3000;//对V/F曲线进行了补偿
     GUI_DISP_HZ(1, 2,"频率：        Hz");
-    GUI_DISP_DEC(4, 2, out_fqc, 2, 0);
+    GUI_DISP_DEC(4, 2, out_fqc_targ, 2, 0);
     GUI_DISP_HZ(1, 3,"电压：        V");
     GUI_DISP_DEC(4, 3, out_volt, 2, 0);
     GUI_DISP_HZ(2, 1,"泰普克变频器");
@@ -263,6 +259,7 @@ int main(void)
     while(1)
     {
         Key_Value_Deal(Key_Value_Get());//按键处理函数
+			  set_parameter(out_fqc_now);
 	 	}
 
 }
